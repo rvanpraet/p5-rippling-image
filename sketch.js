@@ -9,34 +9,46 @@ let drawFn = new Array(5);
 let drawTimes;
 
 function preload() {
-	// img = loadImage('assets/drift1.jpg');
 	img1 = loadImage('assets/face2.jpg');
 	img2 = loadImage('assets/distortions1.jpg');
 	img3 = loadImage('assets/distortions2.jpg');
 }
 
 function setup() {
+	// Images setup
 	images = [img1, img2, img3];
-	imgWidth = round(images[0].width);
-	imgHeight = round(images[0].height);
+	img = images[0];
+	imgWidth = round(img.width);
+	imgHeight = round(img.height);
 	// img.resize(imgWidth, imgHeight);
+
+	// Informative logs
 	console.log('imgWidth ::: ', imgWidth);
 	console.log('imgHeight ::: ', imgHeight);
 	console.log('resolution ::: ', imgWidth * imgHeight);
+
+	// Create canvas
 	cnv = createCanvas(imgWidth * 2, imgHeight * 2, WEBGL);
-	drawFn = [drawEllipse, drawRect, drawBrezier];
+	cnv.position(-width / 3, -height / 2.25);
+
+	// Draw functions
 	drawTimes = 0;
+	drawFn = [drawEllipse, drawRect, drawTriangle];
 	coef = 2;
-	cnv.position(-width / 4, -height / 2.5);
-	// translate(-width / 2, -height / 2);
+}
+
+function keyPressed() {
+	if (keyCode === 71) {
+		redraw();
+	}
 }
 
 function draw() {
-	// background(0);
-	if (drawTimes === 10) {
-		noLoop();
-	}
-
+	background(0);
+	// if (drawTimes === 25) {
+	// 	noLoop();
+	// }
+	noLoop();
 	let xOff = 0;
 	for (let col = 0; col < imgWidth; col += coef) {
 		let yOff = 0;
@@ -62,7 +74,7 @@ function draw() {
 			c[1] = c[1] + round(random(-colorRandom, colorRandom));
 			c[2] = c[2] + round(random(-colorRandom, colorRandom));
 
-			let index = round(random(0, 1));
+			let index = round(random(0, 2));
 			let handler = drawFn[index];
 
 			// if ((xPos * yPos) % 3 !== 0) {
@@ -88,34 +100,33 @@ function drawRect(xPos, yPos, c) {
 	rotateY(radians(random(TWO_PI)));
 	rotateZ(radians(random(TWO_PI)));
 
-	// Colors, fill and stroke
+	// Fill
 	c[3] = random(220, 255);
-	// fill(c);
-	noFill();
-
+	if ((xPos * yPos) % 31 === 0) {
+		fill(c);
+	} else {
+		noFill();
+	}
+	// Stroke
 	strokeWeight(random(2));
 	stroke(c);
 
 	// Rect
 	let x = xPos + random(-2, 2);
 	let y = yPos + random(-2, 2);
-	if (xPos === 0) {
-		xPos++;
-	}
-	if (yPos === 0) {
-		yPos++;
-	}
-	let w = map(xPos, 0, width, random(coef), random(coef * 4));
-	let h = map(yPos, 0, height, random(coef), random(coef * 4));
+
+	// Idea to map width/height
+	// let w = map(xPos, 0, width, random(coef), random(coef * 4));
+	// let h = map(yPos, 0, height, random(coef), random(coef * 4));
 	rect(x, y, random(coef, coef * factor), random(coef, coef * factor));
 	pop();
 }
 
 function drawEllipse(xPos, yPos, c) {
 	// Setup
-	let t = millis() / 1000;
 	let v = p5.Vector.fromAngles(sin(xPos) * random(100), cos(yPos) * random(50), 10); //Vector to translate the ellipse
-	let r = random(coef, coef * factor);
+	let r = random(coef + abs(sin(xPos) * factor));
+	// let r = random(coef, coef * factor);
 
 	push();
 
@@ -124,20 +135,52 @@ function drawEllipse(xPos, yPos, c) {
 	rotateX(radians(random(TWO_PI)));
 	rotateY(radians(random(TWO_PI)));
 	rotateZ(radians(random(TWO_PI)));
-	// translate(0, round(random(-200, 200)), 0);
 
-	// Color, fill, storke
-	c[3] = random(220, 255);
-	// fill(c);
+	// Fill
+	c[3] = random(220, 255); // randomizes the alpha a bit
 	noFill();
+
+	// Stroke
+	c[3] = abs(sin(xPos) * cos(yPos)) * random(170, 255); // randomizes the alpha a bit
+	// strokeWeight(random(coef + abs(sin(xPos) * factor)));
 	strokeWeight(random(coef * factor));
-	c[3] = abs(sin(xPos) * cos(yPos)) * random(170, 255);
 	stroke(c);
-	// noStroke();
-	// stroke(c);
 
 	// Ellipse
 	ellipse(xPos + random(2), yPos + random(2), r * sin(xPos) * random(3), r * cos(yPos) * random(3));
+
+	pop();
+}
+
+function drawTriangle(xPos, yPos, c) {
+	let v = p5.Vector.fromAngles(sin(xPos) * random(100), cos(yPos) * random(50), 10); //Vector to translate the ellipse
+
+	push();
+
+	/* Move */
+	translate(v);
+	rotateX(radians(random(TWO_PI)));
+	rotateY(radians(random(TWO_PI)));
+	rotateZ(radians(random(TWO_PI)));
+
+	// Colors, fill and stroke
+	c[3] = random(220, 255);
+	// fill(c);
+	noFill();
+
+	strokeWeight(random(coef));
+	stroke(c);
+
+	// Rect
+	let mult = coef * factor;
+	let x1 = xPos + random(-2, 2);
+	let y1 = yPos + random(-2, 2);
+	let x2 = x1 + round(random(-mult, mult));
+	let y2 = y1 + round(random(-mult, mult));
+	let x3 = x1 + round(random(-mult, mult));
+	let y3 = y1 + round(random(-mult, mult));
+	triangle(x1, y1, x2, y2, x3, y3);
+
 	pop();
 }
 
