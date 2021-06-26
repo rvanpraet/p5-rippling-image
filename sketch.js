@@ -9,17 +9,22 @@ let drawFn = new Array(5);
 let drawTimes;
 
 function preload() {
-	img1 = loadImage('assets/face2.jpg');
-	img2 = loadImage('assets/distortions1.jpg');
-	img3 = loadImage('assets/distortions2.jpg');
+	img1 = loadImage('assets/portrait2.png');
+	img2 = loadImage('assets/portrait1.jpeg');
+	img3 = loadImage('assets/forest1.jpg');
 }
 
 function setup() {
 	// Images setup
 	images = [img1, img2, img3];
 	img = images[0];
-	imgWidth = round(img.width);
-	imgHeight = round(img.height);
+	let scale = 1.5;
+	imgWidth = round(img.width / scale);
+	imgHeight = round(img.height / scale);
+
+	images.forEach(function (image) {
+		image.resize(imgWidth, imgHeight);
+	});
 	// img.resize(imgWidth, imgHeight);
 
 	// Informative logs
@@ -40,15 +45,33 @@ function setup() {
 function keyPressed() {
 	if (keyCode === 71) {
 		redraw();
+		noLoop();
+	}
+}
+
+function imageProb(rand) {
+	if (rand <= 0.6) {
+		return 0;
+	}
+	if (rand > 0.6 && rand <= 0.95) {
+		return 1;
+	}
+	if (rand > 0.95) {
+		return 2;
 	}
 }
 
 function draw() {
 	background(0);
-	// if (drawTimes === 25) {
-	// 	noLoop();
-	// }
-	noLoop();
+	if (drawTimes === 10) {
+		noLoop();
+	}
+	// noLoop();
+
+	let zeroCount = 0;
+	let oneCount = 0;
+	let twoCount = 0;
+
 	let xOff = 0;
 	for (let col = 0; col < imgWidth; col += coef) {
 		let yOff = 0;
@@ -56,13 +79,24 @@ function draw() {
 			// Pixel position
 			let xPos = col + round(random(-2, 2));
 			let yPos = row + round(random(-2, 2));
+			// let xPos = col;
+			// let yPos = row;
 
 			// Size Factor
 			factor = abs(round(sin(xPos) * cos(yPos) * random(coef * 3)));
 
 			// Image/DrawFn index
-			let i = abs(round(random(0, 2) + random(-1, 0)));
-			// let i = round(random(0, 2));
+			// let i = abs(round(random(0, 2) + random(-2.5, 0)));
+			let i = imageProb(random(0, 1));
+			if (i === 0) {
+				zeroCount++;
+			}
+			if (i === 1) {
+				oneCount++;
+			}
+			if (i === 2) {
+				twoCount++;
+			}
 
 			// Get color from random image
 			let image = images[i];
@@ -77,20 +111,24 @@ function draw() {
 			let index = round(random(0, 2));
 			let handler = drawFn[index];
 
-			// if ((xPos * yPos) % 3 !== 0) {
-			// 	handler(xPos, yPos, c);
-			// }
-			handler(xPos, yPos, c);
+			if ((xPos * yPos) % 7 !== 0) {
+				console.log('rendering coordinate');
+				handler(xPos, yPos, c);
+			}
 
 			yOff += coef;
 		}
 		xOff += coef;
 	}
+
 	drawTimes++;
+	console.log('zeroCount: ', zeroCount);
+	console.log('oneCount: ', oneCount);
+	console.log('twoCount: ', twoCount);
 }
 
-function drawRect(xPos, yPos, c) {
-	let v = p5.Vector.fromAngles(sin(xPos) * random(100), cos(yPos) * random(50), 10); //Vector to translate the ellipse
+function drawRect(xPos, yPos, c, shouldFill = false) {
+	let v = p5.Vector.fromAngles(sin(xPos) * random(100), cos(yPos) * random(100), 10); //Vector to translate the ellipse
 
 	push();
 
@@ -102,7 +140,7 @@ function drawRect(xPos, yPos, c) {
 
 	// Fill
 	c[3] = random(220, 255);
-	if ((xPos * yPos) % 31 === 0) {
+	if (shouldFill || (xPos * yPos) % 31 === 0) {
 		fill(c);
 	} else {
 		noFill();
@@ -118,13 +156,15 @@ function drawRect(xPos, yPos, c) {
 	// Idea to map width/height
 	// let w = map(xPos, 0, width, random(coef), random(coef * 4));
 	// let h = map(yPos, 0, height, random(coef), random(coef * 4));
-	rect(x, y, random(coef, coef * factor), random(coef, coef * factor));
+	let w = random(coef, coef * factor);
+	let h = random(coef, coef * factor);
+	rect(x, y, w, h);
 	pop();
 }
 
 function drawEllipse(xPos, yPos, c) {
 	// Setup
-	let v = p5.Vector.fromAngles(sin(xPos) * random(100), cos(yPos) * random(50), 10); //Vector to translate the ellipse
+	let v = p5.Vector.fromAngles(sin(xPos) * random(100), cos(yPos) * random(100), 10); //Vector to translate the ellipse
 	let r = random(coef + abs(sin(xPos) * factor));
 	// let r = random(coef, coef * factor);
 
@@ -153,7 +193,7 @@ function drawEllipse(xPos, yPos, c) {
 }
 
 function drawTriangle(xPos, yPos, c) {
-	let v = p5.Vector.fromAngles(sin(xPos) * random(100), cos(yPos) * random(50), 10); //Vector to translate the ellipse
+	let v = p5.Vector.fromAngles(sin(xPos) * random(100), cos(yPos) * random(100), 10); //Vector to translate the ellipse
 
 	push();
 
