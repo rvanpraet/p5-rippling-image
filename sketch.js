@@ -9,16 +9,16 @@ let drawFn = new Array(5);
 let drawTimes;
 
 function preload() {
-	img1 = loadImage('assets/portrait2.png');
-	img2 = loadImage('assets/portrait1.jpeg');
-	img3 = loadImage('assets/forest1.jpg');
+	img1 = loadImage('assets/waterfall1.jpg');
+	img2 = loadImage('assets/neonwater1.jpg');
+	img3 = loadImage('assets/distortions2.jpg');
 }
 
 function setup() {
 	// Images setup
 	images = [img1, img2, img3];
 	img = images[0];
-	let scale = 1.5;
+	let scale = 2;
 	imgWidth = round(img.width / scale);
 	imgHeight = round(img.height / scale);
 
@@ -39,7 +39,7 @@ function setup() {
 	// Draw functions
 	drawTimes = 0;
 	drawFn = [drawEllipse, drawRect, drawTriangle];
-	coef = 2;
+	coef = 1.5;
 }
 
 function keyPressed() {
@@ -50,10 +50,10 @@ function keyPressed() {
 }
 
 function imageProb(rand) {
-	if (rand <= 0.6) {
+	if (rand <= 0.65) {
 		return 0;
 	}
-	if (rand > 0.6 && rand <= 0.95) {
+	if (rand > 0.65 && rand <= 0.95) {
 		return 1;
 	}
 	if (rand > 0.95) {
@@ -63,9 +63,10 @@ function imageProb(rand) {
 
 function draw() {
 	background(0);
-	if (drawTimes === 10) {
-		noLoop();
-	}
+	// if (drawTimes === 10) {
+	// 	noLoop();
+	// 	return;
+	// }
 	// noLoop();
 
 	let zeroCount = 0;
@@ -79,11 +80,9 @@ function draw() {
 			// Pixel position
 			let xPos = col + round(random(-2, 2));
 			let yPos = row + round(random(-2, 2));
-			// let xPos = col;
-			// let yPos = row;
 
 			// Size Factor
-			factor = abs(round(sin(xPos) * cos(yPos) * random(coef * 3)));
+			factor = abs(round(sin(xPos) * cos(yPos) * random(coef * 5)));
 
 			// Image/DrawFn index
 			// let i = abs(round(random(0, 2) + random(-2.5, 0)));
@@ -111,8 +110,7 @@ function draw() {
 			let index = round(random(0, 2));
 			let handler = drawFn[index];
 
-			if ((xPos * yPos) % 7 !== 0) {
-				console.log('rendering coordinate');
+			if ((xPos * yPos) % 2 !== 0) {
 				handler(xPos, yPos, c);
 			}
 
@@ -178,10 +176,15 @@ function drawEllipse(xPos, yPos, c) {
 
 	// Fill
 	c[3] = random(220, 255); // randomizes the alpha a bit
-	noFill();
+	// noFill();
+	if ((xPos * yPos) % 13 === 0) {
+		fill(c);
+	} else {
+		noFill();
+	}
 
 	// Stroke
-	c[3] = abs(sin(xPos) * cos(yPos)) * random(170, 255); // randomizes the alpha a bit
+	c[3] = abs(sin(xPos) * cos(yPos)) * random(230, 255); // randomizes the alpha a bit
 	// strokeWeight(random(coef + abs(sin(xPos) * factor)));
 	strokeWeight(random(coef * factor));
 	stroke(c);
@@ -204,9 +207,13 @@ function drawTriangle(xPos, yPos, c) {
 	rotateZ(radians(random(TWO_PI)));
 
 	// Colors, fill and stroke
-	c[3] = random(220, 255);
+	c[3] = random(180, 255);
 	// fill(c);
-	noFill();
+	if ((xPos * yPos) % 31 === 0) {
+		fill(c);
+	} else {
+		noFill();
+	}
 
 	strokeWeight(random(coef));
 	stroke(c);
