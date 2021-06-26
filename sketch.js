@@ -6,31 +6,37 @@ let cnv;
 let coef;
 let factor;
 let drawFn = new Array(5);
+let drawTimes;
 
 function preload() {
-	img = loadImage('assets/drift1.jpg');
+	// img = loadImage('assets/drift1.jpg');
+	img1 = loadImage('assets/face2.jpg');
 	img2 = loadImage('assets/distortions1.jpg');
-	img3 = loadImage('assets/face2.jpg');
+	img3 = loadImage('assets/distortions2.jpg');
 }
 
 function setup() {
-	imgWidth = round(img.width);
-	imgHeight = round(img.height);
+	images = [img1, img2, img3];
+	imgWidth = round(images[0].width);
+	imgHeight = round(images[0].height);
 	// img.resize(imgWidth, imgHeight);
 	console.log('imgWidth ::: ', imgWidth);
 	console.log('imgHeight ::: ', imgHeight);
 	console.log('resolution ::: ', imgWidth * imgHeight);
 	cnv = createCanvas(imgWidth * 2, imgHeight * 2, WEBGL);
-	images = [img2, img3, img];
 	drawFn = [drawEllipse, drawRect, drawBrezier];
+	drawTimes = 0;
 	coef = 2;
-	cnv.position(-width / 4, -height / 4);
-	translate(-width / 2, 0);
+	cnv.position(-width / 4, -height / 2.5);
+	// translate(-width / 2, -height / 2);
 }
 
 function draw() {
 	// background(0);
-	// noLoop();
+	if (drawTimes === 10) {
+		noLoop();
+	}
+
 	let xOff = 0;
 	for (let col = 0; col < imgWidth; col += coef) {
 		let yOff = 0;
@@ -40,11 +46,11 @@ function draw() {
 			let yPos = row + round(random(-2, 2));
 
 			// Size Factor
-			factor = abs(sin(xPos) * cos(yPos) * random(2, 5));
+			factor = abs(round(sin(xPos) * cos(yPos) * random(coef * 3)));
 
 			// Image/DrawFn index
-			// let index = abs(round(random(0, 2) + random(-1, 0)));
-			let i = round(random(0, 1));
+			let i = abs(round(random(0, 2) + random(-1, 0)));
+			// let i = round(random(0, 2));
 
 			// Get color from random image
 			let image = images[i];
@@ -59,36 +65,35 @@ function draw() {
 			let index = round(random(0, 1));
 			let handler = drawFn[index];
 
-			if ((xPos * yPos) % 5 !== 0) {
-				handler(xPos, yPos, c);
-			}
+			// if ((xPos * yPos) % 3 !== 0) {
+			// 	handler(xPos, yPos, c);
+			// }
+			handler(xPos, yPos, c);
 
 			yOff += coef;
 		}
 		xOff += coef;
 	}
+	drawTimes++;
 }
 
 function drawRect(xPos, yPos, c) {
-	let t = millis() / 1000;
-	let v = p5.Vector.fromAngles(t * 1.7, t * 1.5, 0); //Vector to translate the ellipse
+	let v = p5.Vector.fromAngles(sin(xPos) * random(100), cos(yPos) * random(50), 10); //Vector to translate the ellipse
 
 	push();
 
+	/* Move */
 	translate(v);
-	// rotateY(radians(random(360)));
-	// rotateX(radians(random(360)));
-	// translate(0, 0, random(-500, 500));
-
-	// rotate(radians(random(360)));
+	rotateX(radians(random(TWO_PI)));
+	rotateY(radians(random(TWO_PI)));
+	rotateZ(radians(random(TWO_PI)));
 
 	// Colors, fill and stroke
 	c[3] = random(220, 255);
-	fill(c);
+	// fill(c);
+	noFill();
 
 	strokeWeight(random(2));
-	// c = shuffle(c);
-	// c[3] = abs(sin(xPos) * cos(yPos)) * random(0, 180);
 	stroke(c);
 
 	// Rect
@@ -113,10 +118,13 @@ function drawEllipse(xPos, yPos, c) {
 	let r = random(coef, coef * factor);
 
 	push();
+
+	// Move around
 	translate(v);
-	// rotateY(radians(random(360)));
-	// rotateX(radians(random(360)));
-	// translate(0, 0, random(-500, 500));
+	rotateX(radians(random(TWO_PI)));
+	rotateY(radians(random(TWO_PI)));
+	rotateZ(radians(random(TWO_PI)));
+	// translate(0, round(random(-200, 200)), 0);
 
 	// Color, fill, storke
 	c[3] = random(220, 255);
